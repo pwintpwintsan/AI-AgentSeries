@@ -1,10 +1,10 @@
 
 import { GoogleGenAI, Modality, LiveServerMessage, Blob } from '@google/genai';
-import { encode, decode, decodeAudioData } from './audioUtils';
-import { MODEL_NAME, VOICE_NAME, SYSTEM_INSTRUCTION } from '../constants';
+import { encode, decode, decodeAudioData } from './audioUtils.ts';
+import { MODEL_NAME, VOICE_NAME, SYSTEM_INSTRUCTION } from '../constants.ts';
 
 export class InterviewSession {
-  private ai: any;
+  private ai: GoogleGenAI;
   private session: any;
   private inputAudioContext: AudioContext | null = null;
   private outputAudioContext: AudioContext | null = null;
@@ -13,8 +13,8 @@ export class InterviewSession {
   private stream: MediaStream | null = null;
 
   constructor() {
-    // Correctly initialize GoogleGenAI with named parameter apiKey from process.env.API_KEY.
-    this.ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+    // Correctly initialize with the required named parameter and environment variable
+    this.ai = new GoogleGenAI({ apiKey: process.env.API_KEY || '' });
   }
 
   async start(callbacks: {
@@ -40,17 +40,17 @@ export class InterviewSession {
             scriptProcessor.onaudioprocess = (e) => {
               const inputData = e.inputBuffer.getChannelData(0);
               const pcmBlob = this.createBlob(inputData);
-              // CRITICAL: Solely rely on sessionPromise resolves and then call `session.sendRealtimeInput`
+              // Send input data only after the session promise resolves
               sessionPromise.then((session: any) => {
                 session.sendRealtimeInput({ media: pcmBlob });
-              });
+              }).catch(err => console.error("Session input error:", err));
             };
 
             source.connect(scriptProcessor);
             scriptProcessor.connect(this.inputAudioContext.destination);
           },
           onmessage: async (message: LiveServerMessage) => {
-            // Handle Transcription
+            // Process transcriptions
             if (message.serverContent?.outputTranscription) {
               callbacks.onTranscription(message.serverContent.outputTranscription.text, false);
             } else if (message.serverContent?.inputTranscription) {
@@ -61,18 +61,17 @@ export class InterviewSession {
               callbacks.onTurnComplete();
             }
 
-            // Handle Audio Playback - Extract audio data and manage playback queue.
+            // Process audio output from the model
             const base64EncodedAudioString = message.serverContent?.modelTurn?.parts?.[0]?.inlineData?.data;
             
             if (base64EncodedAudioString && this.outputAudioContext) {
-              // Ensure context is running
               if (this.outputAudioContext.state === 'suspended') {
                 await this.outputAudioContext.resume();
               }
 
               callbacks.onSpeaking(true);
               this.nextStartTime = Math.max(this.nextStartTime, this.outputAudioContext.currentTime);
-              // The audio bytes returned by the API is raw PCM data. Do not use AudioContext.decodeAudioData directly.
+              // Use manual decode functions as per guidelines for raw PCM streams
               const buffer = await decodeAudioData(decode(base64EncodedAudioString), this.outputAudioContext, 24000, 1);
               const source = this.outputAudioContext.createBufferSource();
               source.buffer = buffer;
@@ -85,21 +84,30 @@ export class InterviewSession {
                 }
               });
 
-              // Scheduling each new audio chunk to start at this time ensures smooth, gapless playback.
+              // Gapless playback scheduling
               source.start(this.nextStartTime);
               this.nextStartTime += buffer.duration;
               this.sources.add(source);
             }
 
+            // Handle interruption
             if (message.serverContent?.interrupted) {
-              this.sources.forEach(s => s.stop());
+              this.sources.forEach(s => {
+                try { s.stop(); } catch(e) {}
+              });
               this.sources.clear();
               this.nextStartTime = 0;
               callbacks.onSpeaking(false);
             }
           },
-          onerror: callbacks.onError,
-          onclose: callbacks.onClose,
+          onerror: (e) => {
+            console.error("Live session error:", e);
+            callbacks.onError(e);
+          },
+          onclose: () => {
+            console.debug("Live session closed");
+            callbacks.onClose();
+          },
         },
         config: {
           responseModalities: [Modality.AUDIO],
@@ -125,21 +133,26 @@ export class InterviewSession {
     }
     return {
       data: encode(new Uint8Array(int16.buffer)),
-      // The supported audio MIME type is 'audio/pcm'.
       mimeType: 'audio/pcm;rate=16000',
     };
   }
 
   stop() {
-    this.sources.forEach(s => s.stop());
+    this.sources.forEach(s => {
+      try { s.stop(); } catch(e) {}
+    });
     this.sources.clear();
     if (this.stream) {
       this.stream.getTracks().forEach(track => track.stop());
     }
-    if (this.inputAudioContext) this.inputAudioContext.close();
-    if (this.outputAudioContext) this.outputAudioContext.close();
+    if (this.inputAudioContext) {
+      this.inputAudioContext.close().catch(() => {});
+    }
+    if (this.outputAudioContext) {
+      this.outputAudioContext.close().catch(() => {});
+    }
     if (this.session) {
-      this.session.close();
+      try { this.session.close(); } catch(e) {}
     }
   }
 }

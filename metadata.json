@@ -1,5 +1,5 @@
 {
-  "name": "Copy of Thandar: Myanmar AI Job Interview Coach",
+  "name": "AI Agent HR:Thandar: Myanmar AI Job Interview Coach",
   "description": "An interactive AI agent designed to help Myanmar-speaking candidates prepare for job interviews through real-time voice conversations and mock sessions.",
   "requestFramePermissions": [
     "microphone"
