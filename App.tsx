@@ -160,11 +160,9 @@ const App: React.FC = () => {
     <div className="min-h-screen bg-[#FDFEFF] flex flex-col items-center p-4 lg:p-12 font-sans selection:bg-teal-100 overflow-x-hidden">
       {showPayment && <PaymentGate onPaymentComplete={handlePaymentComplete} />}
       
-      {/* Subtle organic background patterns */}
       <div className="fixed top-[-5%] left-[-5%] w-[30%] h-[30%] bg-teal-50/60 rounded-full blur-[100px] -z-10 animate-pulse"></div>
       <div className="fixed bottom-[-5%] right-[-5%] w-[30%] h-[30%] bg-indigo-50/60 rounded-full blur-[100px] -z-10"></div>
 
-      {/* Header */}
       <header className="w-full max-w-6xl flex flex-col md:flex-row items-center justify-between mb-8 lg:mb-12 bg-white/40 backdrop-blur-xl p-8 rounded-[3rem] border border-white/60 shadow-sm">
         <div className="flex items-center space-x-6 w-full md:w-auto mb-6 md:mb-0">
           <CoachAvatar isSpeaking={isSpeaking} />
@@ -190,7 +188,6 @@ const App: React.FC = () => {
         </div>
       </header>
 
-      {/* Main Experience */}
       <main className="w-full max-w-6xl flex flex-col lg:flex-row gap-8 lg:gap-12 mb-12">
         <section className="flex-1 bg-white rounded-[3rem] shadow-2xl shadow-slate-100 border border-slate-100 flex flex-col overflow-hidden min-h-[600px] lg:min-h-[850px]">
           <div className="px-8 py-6 bg-slate-50/30 border-b border-slate-50 flex justify-between items-center">
@@ -215,10 +212,13 @@ const App: React.FC = () => {
                 <div className="w-24 h-24 lg:w-32 lg:h-32 bg-indigo-50 rounded-[3rem] flex items-center justify-center mb-10 shadow-inner">
                   <span className="text-5xl lg:text-7xl">🧘‍♀️</span>
                 </div>
-                <h3 className="text-2xl lg:text-4xl font-black text-slate-900 mb-4 px-4">စတင်ဖို့ အဆင်သင့်ပဲလား?</h3>
+                <h3 className="text-2xl lg:text-4xl font-black text-slate-900 mb-4 px-4">အဆင်သင့်ဖြစ်ပြီလား?</h3>
                 <p className="text-slate-500 text-base lg:text-xl leading-relaxed max-w-md mx-auto px-6 font-medium">
-                  "သင့်ရဲ့ အလုပ်အကိုင် အခွင့်အလမ်းတွေကို မြှင့်တင်ဖို့ အဆင်သင့်ဖြစ်ပြီလား? သန္တာနဲ့ အင်တာဗျူး စတင်လေ့ကျင့်ကြည့်ရအောင်။"
+                  "သင့်ရဲ့ အလုပ်အကိုင် အခွင့်အလမ်းတွေကို မြှင့်တင်ဖို့ အဆင်သင့်ဖြစ်ပြီလား? သန္တာက သင့်ကို ကူညီဖို့ အဆင်သင့် စောင့်နေပါတယ်။"
                 </p>
+                <div className="mt-8 px-6 py-3 bg-teal-50 text-teal-700 rounded-full font-bold text-sm animate-pulse">
+                  စတင်ရန် အောက်က ခလုတ်ကို နှိပ်ပါ 👇
+                </div>
               </div>
             )}
             

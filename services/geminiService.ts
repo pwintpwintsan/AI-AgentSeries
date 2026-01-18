@@ -13,8 +13,11 @@ export class InterviewSession {
   private stream: MediaStream | null = null;
 
   constructor() {
-    // Correctly initialize with the required named parameter and environment variable
-    this.ai = new GoogleGenAI({ apiKey: process.env.API_KEY || '' });
+    // Safely access process.env to avoid ReferenceErrors in strict browser environments
+    const apiKey = (typeof process !== 'undefined' && process.env && process.env.API_KEY) 
+      ? process.env.API_KEY 
+      : '';
+    this.ai = new GoogleGenAI({ apiKey });
   }
 
   async start(callbacks: {
@@ -40,7 +43,6 @@ export class InterviewSession {
             scriptProcessor.onaudioprocess = (e) => {
               const inputData = e.inputBuffer.getChannelData(0);
               const pcmBlob = this.createBlob(inputData);
-              // Send input data only after the session promise resolves
               sessionPromise.then((session: any) => {
                 session.sendRealtimeInput({ media: pcmBlob });
               }).catch(err => console.error("Session input error:", err));
@@ -50,7 +52,6 @@ export class InterviewSession {
             scriptProcessor.connect(this.inputAudioContext.destination);
           },
           onmessage: async (message: LiveServerMessage) => {
-            // Process transcriptions
             if (message.serverContent?.outputTranscription) {
               callbacks.onTranscription(message.serverContent.outputTranscription.text, false);
             } else if (message.serverContent?.inputTranscription) {
@@ -61,7 +62,6 @@ export class InterviewSession {
               callbacks.onTurnComplete();
             }
 
-            // Process audio output from the model
             const base64EncodedAudioString = message.serverContent?.modelTurn?.parts?.[0]?.inlineData?.data;
             
             if (base64EncodedAudioString && this.outputAudioContext) {
@@ -71,7 +71,6 @@ export class InterviewSession {
 
               callbacks.onSpeaking(true);
               this.nextStartTime = Math.max(this.nextStartTime, this.outputAudioContext.currentTime);
-              // Use manual decode functions as per guidelines for raw PCM streams
               const buffer = await decodeAudioData(decode(base64EncodedAudioString), this.outputAudioContext, 24000, 1);
               const source = this.outputAudioContext.createBufferSource();
               source.buffer = buffer;
@@ -84,13 +83,11 @@ export class InterviewSession {
                 }
               });
 
-              // Gapless playback scheduling
               source.start(this.nextStartTime);
               this.nextStartTime += buffer.duration;
               this.sources.add(source);
             }
 
-            // Handle interruption
             if (message.serverContent?.interrupted) {
               this.sources.forEach(s => {
                 try { s.stop(); } catch(e) {}
