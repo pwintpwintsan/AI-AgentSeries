@@ -236,40 +236,44 @@ const App: React.FC = () => {
             className="flex-1 overflow-y-auto p-8 lg:p-12 space-y-8 lg:space-y-10 bg-[radial-gradient(#f1f5f9_1.5px,transparent_1.5px)] [background-size:32px:32px]"
           >
             {transcripts.length === 0 && (status === ConnectionStatus.IDLE || status === ConnectionStatus.ERROR) && (
-              <div className="h-full flex flex-col items-center justify-center text-center py-10 lg:py-20 opacity-0 animate-in fade-in slide-in-from-bottom-4 duration-1000 fill-mode-forwards">
-                <div className="flex gap-4 mb-8">
-                  <div className="w-16 h-16 lg:w-20 lg:h-20 bg-teal-50 rounded-2xl flex items-center justify-center shadow-sm animate-bounce [animation-delay:0.1s]">
-                    <span className="text-3xl lg:text-4xl">💼</span>
-                  </div>
-                  <div className="w-16 h-16 lg:w-20 lg:h-20 bg-indigo-50 rounded-2xl flex items-center justify-center shadow-sm animate-bounce [animation-delay:0.3s]">
-                    <span className="text-3xl lg:text-4xl">🔍</span>
-                  </div>
-                  <div className="w-16 h-16 lg:w-20 lg:h-20 bg-amber-50 rounded-2xl flex items-center justify-center shadow-sm animate-bounce [animation-delay:0.5s]">
-                    <span className="text-3xl lg:text-4xl">🚀</span>
+              <div className="h-full flex flex-col items-center justify-center text-center py-10 lg:py-20 animate-in fade-in slide-in-from-bottom-8 duration-1000 fill-mode-forwards">
+                {/* Big Illustration/Icon Group */}
+                <div className="relative mb-12">
+                  <div className="absolute inset-0 bg-teal-400/10 blur-[60px] rounded-full scale-150 animate-pulse"></div>
+                  <div className="relative flex items-center justify-center gap-6 lg:gap-10">
+                    <div className="w-24 h-24 lg:w-32 lg:h-32 bg-white rounded-[2.5rem] flex items-center justify-center shadow-xl shadow-teal-100 border border-teal-50 rotate-[-6deg] animate-bounce [animation-delay:0.1s]">
+                      <span className="text-5xl lg:text-7xl">💼</span>
+                    </div>
+                    <div className="w-28 h-28 lg:w-40 lg:h-40 bg-white rounded-[3rem] flex items-center justify-center shadow-2xl shadow-indigo-100 border border-indigo-50 z-10 scale-110 animate-bounce [animation-delay:0.3s]">
+                      <span className="text-6xl lg:text-8xl">👩‍💼</span>
+                    </div>
+                    <div className="w-24 h-24 lg:w-32 lg:h-32 bg-white rounded-[2.5rem] flex items-center justify-center shadow-xl shadow-amber-100 border border-amber-50 rotate-[6deg] animate-bounce [animation-delay:0.5s]">
+                      <span className="text-5xl lg:text-7xl">🔍</span>
+                    </div>
                   </div>
                 </div>
                 
-                <h3 className="text-2xl lg:text-4xl font-black text-slate-900 mb-6 px-4">အဆင်သင့်ဖြစ်ပြီလား?</h3>
-                
-                <div className="space-y-6 max-w-xl mx-auto px-6">
-                  <div className="bg-white p-6 rounded-[2.5rem] border border-slate-100 shadow-sm relative overflow-hidden group">
-                    <div className="absolute top-0 left-0 w-2 h-full bg-teal-500"></div>
-                    <p className="text-lg lg:text-2xl font-black text-slate-800 leading-tight mb-2">
-                      Tell me what job preparation you want or what job are you looking for?
-                    </p>
-                    <p className="text-base lg:text-xl font-bold text-teal-600 leading-relaxed">
+                <div className="space-y-8 max-w-2xl mx-auto px-6">
+                  <div className="space-y-3">
+                    <h3 className="text-2xl lg:text-4xl font-black text-slate-900 leading-tight">
+                      What job interview are you preparing or what job are you looking for?
+                    </h3>
+                    <div className="h-1 w-20 bg-teal-500 mx-auto rounded-full"></div>
+                    <h4 className="text-xl lg:text-3xl font-bold text-teal-600 leading-relaxed">
                       ဘယ်လို အလုပ်အကိုင်မျိုးအတွက် ပြင်ဆင်ချင်ပါသလဲ? ဒါမှမဟုတ် ဘယ်လို အလုပ်မျိုးကို ရှာဖွေနေတာလဲ?
-                    </p>
+                    </h4>
                   </div>
                   
-                  <p className="text-slate-500 text-sm lg:text-base font-medium leading-relaxed">
-                    "သင့်ရဲ့ အလုပ်အကိုင် အခွင့်အလမ်းတွေကို မြှင့်တင်ဖို့ အဆင်သင့်ဖြစ်ပြီလား? သန္တာက သင့်ကို ကူညီဖို့ အဆင်သင့် စောင့်နေပါတယ်။"
-                  </p>
+                  <div className="bg-slate-50/80 backdrop-blur-sm p-6 lg:p-8 rounded-[2.5rem] border border-slate-100 shadow-sm inline-block">
+                    <p className="text-slate-500 text-sm lg:text-lg font-medium leading-relaxed italic">
+                      "သင့်ရဲ့ အလုပ်အကိုင် အခွင့်အလမ်းတွေကို မြှင့်တင်ဖို့ အဆင်သင့်ဖြစ်ပြီလား? သန္တာက သင့်ကို ကူညီဖို့ အဆင်သင့် စောင့်နေပါတယ်။"
+                    </p>
+                  </div>
                 </div>
 
-                <div className="mt-12 px-8 py-4 bg-teal-50 text-teal-700 rounded-full font-black text-sm lg:text-base animate-pulse shadow-sm border border-teal-100 flex items-center gap-3">
+                <div className="mt-12 px-10 py-5 bg-teal-50 text-teal-700 rounded-full font-black text-sm lg:text-lg animate-pulse shadow-sm border border-teal-100 flex items-center gap-4">
                   <span>စတင်ရန် အောက်က ခလုတ်ကို နှိပ်ပါ</span>
-                  <span className="text-xl">👇</span>
+                  <span className="text-2xl">👇</span>
                 </div>
               </div>
             )}
