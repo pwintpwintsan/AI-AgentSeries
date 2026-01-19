@@ -32,6 +32,7 @@ const App: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [showPayment, setShowPayment] = useState(false);
+  const [needsKey, setNeedsKey] = useState(false);
   
   const [userStats, setUserStats] = useState<UserStats>(() => {
     try {
@@ -50,6 +51,16 @@ const App: React.FC = () => {
   useEffect(() => {
     localStorage.setItem('thandar_user_stats', JSON.stringify(userStats));
   }, [userStats]);
+
+  useEffect(() => {
+    const checkKey = async () => {
+      if (window.aistudio) {
+        const hasKey = await window.aistudio.hasSelectedApiKey();
+        setNeedsKey(!hasKey);
+      }
+    };
+    checkKey();
+  }, []);
 
   useEffect(() => {
     if (status === ConnectionStatus.ACTIVE) {
@@ -86,6 +97,14 @@ const App: React.FC = () => {
     }
   }, [transcripts]);
 
+  const handleSelectKey = async () => {
+    if (window.aistudio) {
+      await window.aistudio.openSelectKey();
+      setNeedsKey(false);
+      handleStart(); // Auto-start after selection
+    }
+  };
+
   const handlePaymentComplete = () => {
     setUserStats(prev => ({ ...prev, isPaid: true }));
     setShowPayment(false);
@@ -96,6 +115,15 @@ const App: React.FC = () => {
     if (userStats.accumulatedTimeMs >= limit) {
       setShowPayment(true);
       return;
+    }
+
+    // Check key again before starting
+    if (window.aistudio) {
+      const hasKey = await window.aistudio.hasSelectedApiKey();
+      if (!hasKey) {
+        setNeedsKey(true);
+        return;
+      }
     }
 
     setError(null);
@@ -123,7 +151,7 @@ const App: React.FC = () => {
         onSpeaking: (speaking) => setIsSpeaking(speaking),
         onError: (err) => {
           console.error(err);
-          setError('မိုက်ခရိုဖုန်း ချိတ်ဆက်မှု အဆင်မပြေပါ။ ပြန်လည်ကြိုးစားပေးပါ။');
+          setError('ချိတ်ဆက်မှု အဆင်မပြေပါ။ API Key သို့မဟုတ် အင်တာနက်ကို စစ်ဆေးပေးပါ။');
           setStatus(ConnectionStatus.ERROR);
         },
         onClose: () => {
@@ -269,13 +297,32 @@ const App: React.FC = () => {
             
             <div className="flex flex-col items-center space-y-8">
               {error && (
-                <div className="bg-rose-50 text-rose-600 px-6 py-3 rounded-2xl text-xs font-black animate-bounce border border-rose-100">
-                   ⚠️ {error}
+                <div className="flex flex-col items-center gap-4">
+                  <div className="bg-rose-50 text-rose-600 px-6 py-3 rounded-2xl text-xs font-black border border-rose-100 text-center">
+                    ⚠️ {error}
+                  </div>
+                  {(error.includes('Key') || error.includes('API')) && (
+                    <button 
+                      onClick={handleSelectKey}
+                      className="px-6 py-2 bg-amber-500 text-white rounded-xl font-bold text-sm hover:bg-amber-600 transition-colors"
+                    >
+                      API Key ရွေးချယ်ရန် (Select Key)
+                    </button>
+                  )}
                 </div>
               )}
               
               <div className="w-full flex justify-center">
-                {status !== ConnectionStatus.ACTIVE ? (
+                {needsKey ? (
+                  <button
+                    onClick={handleSelectKey}
+                    className="group relative flex items-center justify-center w-full max-w-lg h-20 lg:h-24 rounded-3xl font-black text-xl lg:text-3xl bg-amber-500 text-white hover:bg-amber-600 transition-all transform active:scale-95 shadow-2xl"
+                  >
+                    <span className="relative z-10 flex items-center gap-4 text-center px-4 leading-tight">
+                      API Key ရွေးချယ်ပေးပါ 🔑
+                    </span>
+                  </button>
+                ) : status !== ConnectionStatus.ACTIVE ? (
                   <button
                     disabled={status === ConnectionStatus.CONNECTING}
                     onClick={handleStart}
